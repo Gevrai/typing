@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Practice</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+        }
+
+        .container {
+            text-align: center;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            width: 90%;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .text-to-type {
+            font-size: 2rem; /* Increase font size */
+            text-align: center; /* Center the text */
+            margin-bottom: 20px;
+            line-height: 1.8; /* Adjust line height for better readability */
+            color: #555;
+            white-space: pre-wrap;
+        }
+
+        .text-to-type span {
+            color: red;
+        }
+
+        .text-to-type .correct {
+            color: #FFF
+        }
+
+        .text-to-type .unwritten {
+            color: #444;
+        }
+
+        .text-to-type .current {
+            color: blue;
+            font-weight: bold;
+        }
+
+        .text-to-type .error {
+            text-decoration: underline;
+            text-decoration-color: red;
+            text-decoration-thickness: 2px;
+        }
+
+        .input-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            font-size: 1.5rem; /* Increase font size */
+            font-family: 'Courier New', Courier, monospace; /* Use a monospace font for better readability */
+            padding: 15px; /* Add more padding for a nicer look */
+            border: 3px solid #ccc; /* Make the border thicker */
+            border-radius: 8px; /* Slightly round the corners */
+            color: transparent;
+            caret-color: transparent; /* Remove the caret */
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .input-overlay:focus {
+            border-color: #007BFF;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        .text-to-type-container:focus-within {
+            border-color: #aaa; /* Change border color to lighter gray when focused */
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh);
+                opacity: 1;
+            }
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Typing Practice</h1>
+        <div class="text-to-type" id="text-to-type-container">
+            <span id="text-to-type">Loading...</span>
+            <input type="text" class="input-overlay" id="input-overlay" autocomplete="off">
+        </div>
+    </div>
+    <script>
+        const textToTypeElement = document.getElementById('text-to-type');
+        const inputOverlay = document.getElementById('input-overlay');
+
+        fetch('sentences.json')
+            .then(response => response.json())
+            .then(data => {
+                const sentences = data;
+                let randomSentence = sentences[Math.floor(Math.random() * sentences.length)];
+                textToTypeElement.innerHTML = randomSentence
+                    .split('')
+                    .map(char => `<span class='unwritten'>${char}</span>`)
+                    .join('');
+                inputOverlay.focus();
+
+                inputOverlay.addEventListener('input', () => {
+                    const userInput = inputOverlay.value;
+                    const targetText = randomSentence;
+                    let highlightedText = '';
+
+                    for (let i = 0; i < targetText.length; i++) {
+                        if (i < userInput.length) {
+                            if (userInput[i] === targetText[i]) {
+                                highlightedText += `<span class='correct'>${targetText[i]}</span>`;
+                            } else {
+                                highlightedText += `<span class='error'>${targetText[i]}</span>`;
+                            }
+                        } else if (i === userInput.length) {
+                            highlightedText += `<span class='current'>${targetText[i]}</span>`;
+                        } else {
+                            highlightedText += `<span class='unwritten'>${targetText[i]}</span>`;
+                        }
+                    }
+
+                    textToTypeElement.innerHTML = highlightedText;
+
+                    // Check if the user has completed the text correctly
+                    if (userInput === targetText) {
+                        randomSentence = sentences[Math.floor(Math.random() * sentences.length)];
+                        textToTypeElement.innerHTML = randomSentence
+                            .split('')
+                            .map(char => `<span class='unwritten'>${char}</span>`)
+                            .join('');
+                        inputOverlay.value = '';
+                    }
+                });
+            });
+
+        document.body.addEventListener('click', () => {
+            inputOverlay.focus();
+        });
+    </script>
+</body>
+</html>
